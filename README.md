@@ -61,7 +61,8 @@ Disclaimer:
 This script is for Ethical purposes only. Use it responsibly and at your own risk. Testing for vulnerabilities on systems you do not own or have permission to test is illegal.
 
 Additional Notes:
-
+   
     The script utilizes various tools for URL extraction (gau, waybackurls, waymore). You may need to install these tools separately.
+    and make sure to add your API keys to config files of these tools to get all possible URLs
     The script automatically removes common file extensions during parameter extraction to focus on potential vulnerabilities.
     Remember to replace "my-burp-collab-id" with your actual Burp Collaborator server ID.
