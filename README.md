@@ -32,18 +32,19 @@ This script automates the process of finding Server-Side Request Forgery (SSRF) 
 ```
 OPtions:
 
-   -h: Inject into Host Header
-   -e: Inject into common headers (From, User-Agent, Referer, etc.)
-   -p: Inject into URL parameters (requires URL list)
-   -l: Path to a file containing a list of target URLs
-   -c: Burp Collaborator server ID (replace with your collaborator ID)
-   -s: Delay between requests in seconds (e.g., -s 0.1 for 10 requests per second)
+* -h: Inject into Host Header
+* -e: Inject into common headers (From, User-Agent, Referer, etc.)
+* -p: Inject into URL parameters (requires URL list)
+* -l: Path to a file containing a list of target URLs
+* -c: Burp Collaborator server ID (replace with your collaborator ID)
+* -s: Delay between requests in seconds (e.g., -s 0.1 for 10 requests per second)
 
 Example:
 ```bash
 ./0dSSRF.sh -hep -l targets.txt -c my-burp-collab-id -s 5
 ```
 
+**How it work?**
 Now you mission is to watch out your Collaborator. if you found any activity notice the time and look back in your terminal and catch the vulnerable event
 
  ![WhatsApp Image 2024-08-28 at 22 41 42_36613ade](https://github.com/user-attachments/assets/5f7de255-930c-4c3d-b435-2135bc3b665e)
