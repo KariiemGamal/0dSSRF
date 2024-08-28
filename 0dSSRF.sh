@@ -81,7 +81,7 @@ inject_url_parameters() {
   echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
   printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau"
   cat domains.txt | waybackurls > waybackurls.output && echo -e "${GREEN}[*] Extracted URLs from waybackurls"
-  waymore -i domains.txt -mode U -oU waymore.output -nd && echo -e "${GREEN}[*] Extracted URLs from waymore"
+  waymore -i $main_Domain -mode U -oU waymore.output -nd && echo -e "${GREEN}[*] Extracted URLs from waymore"
   cat gau.output waybackurls.output waymore.output | grep "=" > all_urls
   cat all_urls | uro -b jpg png js pdf css jpeg gif svg ttf woff > parms.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
 
