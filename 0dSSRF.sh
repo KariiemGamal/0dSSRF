@@ -63,7 +63,7 @@ inject_common_headers() {
     echo -e "${YELLOW}$current_time ${NC}- Sent request to: $domain"
     # Wait for $Delay seconds before next iteration
     #sleep $delay
-done < "$list"
+  done < "$list"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into common headers ${YELLOW}Finished ${NC}"
 
 }
