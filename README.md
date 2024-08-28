@@ -31,12 +31,13 @@ This script automates the process of finding Server-Side Request Forgery (SSRF) 
 ./0dSSRF.sh -hep -l urls_list.txt -c collaborator_id -s requests_per_second
 ```
 OPtions:
--h: Inject into Host Header
--e: Inject into common headers (From, User-Agent, Referer, etc.)
--p: Inject into URL parameters (requires URL list)
--l: Path to a file containing a list of target URLs
--c: Burp Collaborator server ID (replace with your collaborator ID)
--s: Delay between requests in seconds (e.g., -s 0.1 for 10 requests per second)
+
+   -h: Inject into Host Header
+   -e: Inject into common headers (From, User-Agent, Referer, etc.)
+   -p: Inject into URL parameters (requires URL list)
+   -l: Path to a file containing a list of target URLs
+   -c: Burp Collaborator server ID (replace with your collaborator ID)
+   -s: Delay between requests in seconds (e.g., -s 0.1 for 10 requests per second)
 
 Example:
 ```bash
