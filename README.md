@@ -58,7 +58,7 @@ This command will scan targets listed in "targets.txt" for URL parameter vulnera
 
 Disclaimer:
 
-This script is for educational purposes only. Use it responsibly and at your own risk. Testing for vulnerabilities on systems you do not own or have permission to test is illegal.
+This script is for Ethical purposes only. Use it responsibly and at your own risk. Testing for vulnerabilities on systems you do not own or have permission to test is illegal.
 
 Additional Notes:
 
