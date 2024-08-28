@@ -104,7 +104,7 @@ inject_url_parameters() {
     key=$(echo "$param" | cut -d'=' -f1)
     value=$(echo "$param" | cut -d'=' -f2)
     # Construct new URL with the parameter injected
-    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s/$key=$value/$key=http://$Collab/")"
+    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$Collab|")"
     # Send the request
     curl -L "$new_url" &> /dev/null &
     current_time=$(date +"%H:%M:%S")
