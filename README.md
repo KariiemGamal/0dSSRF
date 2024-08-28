@@ -1,26 +1,32 @@
-## Automated Vulnerability Scanner
+## 0dSSRF: SSRF & Open Redirect Scanner
 
-This script automates the process of finding vulnerabilities in your applications or networks. It utilizes various techniques to identify potential security weaknesses, helping you stay ahead of potential threats.
+This script automates the process of finding Server-Side Request Forgery (SSRF) and Open Redirect vulnerabilities in web applications.
 
 **Features:**
 
-* Identifies common vulnerabilities in applications and networks.
-* Generates detailed reports highlighting potential vulnerabilities.
-* Streamlines the vulnerability scanning process, saving time and effort.
+* Injects the Burp Collaborator server into various locations to identify potential vulnerabilities.
+* Supports targeting specific attack vectors:
+    * Host Header Injection
+    * Common Header Injection
+    * URL Parameter Injection (with automatic URL extraction)
+* Customizable delay between requests to control scan speed.
+
+**Requirements:**
+
+* Linux or macOS (may require adjustments for other platforms)
+* `curl`
+* `gau` (optional, for URL extraction)
+* `waybackurls` (optional, for URL extraction)
+* `waymore` (optional, for URL extraction)
+* `uro` (optional, parameter extraction)
 
 **Installation:**
 
-**Prerequisites:**
+1. Download the script (0dSSRF.sh)
+2. Make the script executable: `chmod +x 0dSSRF.sh`
 
-* Python 3.x
+**Usage:**
 
-**Additional Libraries (if required):**
+```markdown
+./0dSSRF.sh -hep -l urls_list.txt -c collaborator_id -s requests_per_second
 
-* [List any additional libraries required, e.g., `nmap`, `pip install requests`]
-
-**Steps:**
-
-1. Clone the repository:
-
-   ```bash
-   git clone [https://github.com/](https://github.com/)<your-username>/<repo-name>.git
