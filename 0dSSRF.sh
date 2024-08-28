@@ -86,7 +86,7 @@ inject_url_parameters() {
   cat all_urls | uro -b jpg png js pdf css jpeg gif svg ttf woff > parms.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
 
   echo -e "${light_blue}[*] injecting Burp Collaborator into parameters...${NC}"
-# Loop through each URL in the file
+  # Loop through each URL in the file
   while IFS= read -r url; do
   # Skip empty lines
   if [[ -z "$url" ]]; then
