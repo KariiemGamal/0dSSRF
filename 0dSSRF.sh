@@ -13,15 +13,15 @@ NC='\033[0m' # No Color
 
 # Function to print the intro message
 print_intro() {
-  echo -e "${GREEN} _______  ______            _______  _______  ______                _____  "
-  echo -e "${GREEN}(  ___  )(  __  \ |\     /|(  ____ \(  ____ \/ ___  \ |\     /|    / ___ \ "
-  echo -e "${GREEN}| (   ) || (  \  )( \   / )| (    \/| (    \/\/   \  \( \   / )   ( (   ) )"
-  echo -e "${GREEN}| |   | || |   ) | \ (_) / | (_____ | (_____    ___) / \ (_) /     \/  / / "
-  echo -e "${GREEN}| |   | || |   | |  \   /  (_____  )(_____  )  (___ (   \   /         ( (  "
-  echo -e "${GREEN}| |   | || |   ) |   ) (         ) |      ) |      ) \   ) (          | |  "
-  echo -e "${GREEN}| (___) || (__/  )   | |   /\____) |/\____) |/\___/  /   | |    _     (_)  "
-  echo -e "${GREEN}(_______)(______/    \_/   \_______)\_______)\______/    \_/   (_)     _   "
-  echo -e "${GREEN}                                                                      (_)  "
+  echo -e "${GREEN} _______  ______            _______  _______  ______                _____  ${NC}"
+  echo -e "${GREEN}(  ___  )(  __  \ |\     /|(  ____ \(  ____ \/ ___  \ |\     /|    / ___ \ ${NC}"
+  echo -e "${GREEN}| (   ) || (  \  )( \   / )| (    \/| (    \/\/   \  \( \   / )   ( (   ) )${NC}"
+  echo -e "${GREEN}| |   | || |   ) | \ (_) / | (_____ | (_____    ___) / \ (_) /     \/  / / ${NC}"
+  echo -e "${GREEN}| |   | || |   | |  \   /  (_____  )(_____  )  (___ (   \   /         ( (  ${NC}"
+  echo -e "${GREEN}| |   | || |   ) |   ) (         ) |      ) |      ) \   ) (          | |  ${NC}"
+  echo -e "${GREEN}| (___) || (__/  )   | |   /\____) |/\____) |/\___/  /   | |    _     (_)  ${NC}"
+  echo -e "${GREEN}(_______)(______/    \_/   \_______)\_______)\______/    \_/   (_)     _   ${NC}"
+  echo -e "${GREEN}                                                                      (_)  ${NC}"
   echo -e ""
   echo -e "${YELLOW}                         Welcome To 0dSSRF👑, ${NC}"
   echo -e ""
@@ -79,9 +79,9 @@ handle_e_option() {
 # Function to gather URLs and inject into parameters
 inject_url_parameters() {
   echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
-  printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau"
-  cat domains.txt | waybackurls > waybackurls.output && echo -e "${GREEN}[*] Extracted URLs from waybackurls"
-  waymore -i $main_Domain -mode U -oU waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore"
+  printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
+  cat domains.txt | waybackurls > waybackurls.output && echo -e "${GREEN}[*] Extracted URLs from waybackurls${NC}"
+  waymore -i $main_Domain -mode U -oU waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
   cat gau.output waybackurls.output waymore.output | grep "=" > all_urls
   cat all_urls | uro -b jpg png js pdf css jpeg gif svg ttf woff > parms.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
 
