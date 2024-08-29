@@ -16,7 +16,7 @@ This script automates the process of finding Server-Side Request Forgery (SSRF) 
 * Linux or macOS (may require adjustments for other platforms)
 * `curl`
 * `gau` (optional, for URL extraction)
-* `waybackurls` (optional, for URL extraction)
+* `waybackurls` (optional, for URL extraction) ❌ cancelled
 * `waymore` (optional, for URL extraction)
 * `uro` (optional, parameter extraction)
 
@@ -45,14 +45,18 @@ Example:
 ```
 
 **How it work?**
-Now you mission is to watch out your Collaborator. if you found any activity notice the time and look back in your terminal and catch the vulnerable event
+
+Monitor your Collaborator's activity for potential vulnerabilities. if you found any activity notice the time and look back in your terminal and catch the vulnerable event
 
  ![WhatsApp Image 2024-08-28 at 22 41 42_36613ade](https://github.com/user-attachments/assets/5f7de255-930c-4c3d-b435-2135bc3b665e)
 
 ![WhatsApp Image 2024-08-28 at 22 41 42_7f22aa27](https://github.com/user-attachments/assets/0eb10439-7124-464e-9eb3-9e377adfada7)
 
+for the third stage, requests carry information about the vulnerable server & parameter & time.
 
+![image](https://github.com/user-attachments/assets/a753d93a-0194-4229-9a0d-0a3332eb8ae5)
 
+This stage also includes testing for open redirects. It's crucial to verify that the detected requests don't originate from your own IP address. In such cases, a manual check is recommended for confirmation.
 
 This command will scan targets listed in "targets.txt" for URL parameter vulnerabilities, using your Burp Collaborator server with a delay of 0.2 seconds between requests.
 
