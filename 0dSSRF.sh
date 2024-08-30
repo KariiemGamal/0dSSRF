@@ -90,11 +90,10 @@ handle_e_option() {
 inject_url_parameters() {
   echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
   printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
-  #cat domains.txt | waybackurls > waybackurls.output && echo -e "${GREEN}[*] Extracted URLs from waybackurls${NC}"
   waymore -i $main_Domain -mode U -oU waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
-  cat gau.output waymore.output > all_urls.log
+  cat gau.output waymore.output | uro > all_urls.log
   rm gau.output waymore.output
-  cat all_urls.log | grep "=" > all_params
+  cat all_urls.log | grep -o '.*\?.*=.*' > all_params
   cat all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > filtered_params.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
   echo "">>filtered_params.txt
 
