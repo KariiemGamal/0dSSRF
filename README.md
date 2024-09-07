@@ -1,6 +1,10 @@
-## 0dSSRF: SSRF & Open Redirect Scanner
+## 0dSSRF: Your Collaborative SSRF & Open Redirect Scannerr
 
 This script automates the process of finding Server-Side Request Forgery (SSRF) and Open Redirect vulnerabilities in web applications.
+
+**For a more in-depth understanding, I recommend reading this comprehensive article on Medium:**
+
+https://medium.com/p/944be6770a02/edit
 
 **Features:**
 
@@ -66,6 +70,10 @@ for the third stage, requests carry information about the vulnerable server & pa
 ![image](https://github.com/user-attachments/assets/a753d93a-0194-4229-9a0d-0a3332eb8ae5)
 
 This stage also includes testing for open redirects. It's crucial to verify that the detected requests don't originate from your own IP address. In such cases, a manual check is recommended for confirmation.
+
+**Future ideas:**
+- Webhook Integration: Working on automating the collection of vulnerable servers from Collaborator using webhook.site.
+- Discord Notification: After running the script, receive a Discord message with identified vulnerable domains directly.
 
 
 Disclaimer:
