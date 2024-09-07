@@ -71,6 +71,16 @@ for the third stage, requests carry information about the vulnerable server & pa
 
 This stage also includes testing for open redirects. It's crucial to verify that the detected requests don't originate from your own IP address. In such cases, a manual check is recommended for confirmation.
 
+**Note:**
+
+For uncompleted or malformed domain name in DNS lookup in your collaborator, it's recommended to look at log files and capture the vulnerable server by coupling time between the activity in collaborator and in log file using command:
+
+"$cat  inject_host_header.log | grep 03:27 " for example
+
+![362429258-5f7de255-930c-4c3d-b435-2135bc3b665e](https://github.com/user-attachments/assets/1a24cd18-ac57-44c6-99dd-f30d3de1294f)
+![362429216-0eb10439-7124-464e-9eb3-9e377adfada7](https://github.com/user-attachments/assets/e3ce4230-924d-4dfb-9f34-f54da095ca01)
+
+
 **Future ideas:**
 - Webhook Integration: Working on automating the collection of vulnerable servers from Collaborator using webhook.site.
 - Discord Notification: After running the script, receive a Discord message with identified vulnerable domains directly.
