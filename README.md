@@ -55,15 +55,23 @@ This command will scan targets listed in "targets.txt" for URL parameter vulnera
 **How it work?**
 
 Monitor your Collaborator's activity for potential vulnerabilities. if you found any activity, notice the subdomain in dns lookup or HTTP request 
-This subdomain will refer to the vulnerable server:
+This section will refer to the vulnerable server: 
 
-![WhatsApp Image 2024-09-07 at 23 54 01_1f11028f](https://github.com/user-attachments/assets/5867d272-78d2-4426-aa7b-8ebbc558f2df)
+*subdomain-vulnerable-com >> subdomain.vulnerable.com*
 
-while this subdomain will refer to the injected place: 
+![WhatsApp Image 2024-09-08 at 14 33 05_e0605079](https://github.com/user-attachments/assets/c633e93c-a6e2-4fe5-bcae-e47c7fb94e78)
 
-![WhatsApp Image 2024-09-07 at 23 54 01_67e694d4](https://github.com/user-attachments/assets/3199be7b-8b23-4af9-ae09-a7376d4655e9)
 
-h for Host Header, a for Absolute URL, in common headers you will find the vulnerable header
+while this secion will refer to the injected place: 
+
+![WhatsApp Image 2024-09-08 at 14 33 05_26c2ddbf](https://github.com/user-attachments/assets/ad2536a4-50d0-49de-b925-c85fcdda75aa)
+
+
+h for Host Header, a for Absolute URL,p for parameter, in common headers you will find the vulnerable header:
+
+![WhatsApp Image 2024-09-08 at 14 33 05_9be21f54](https://github.com/user-attachments/assets/8086c9a0-bc3d-4aee-8b74-51ddc6dfce91)
+
+
 
 for the third stage, requests carry information about the vulnerable server & parameter & time:
 
