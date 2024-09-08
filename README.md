@@ -1,4 +1,4 @@
-## 0dSSRF: Your Collaborative SSRF & Open Redirect Scannerr
+## 0dSSRF: Your Collaborative SSRF & Open Redirect Scanner
 
 This script automates the process of finding Server-Side Request Forgery (SSRF) and Open Redirect vulnerabilities in web applications.
 
