@@ -38,6 +38,10 @@ inject_host_header() {
   # For Counter
   counter=0
   total_urls=$(wc -l < "$list")
+  
+  calculate_estimated_time $total_urls $requests_per_second
+  sleep 1
+
   while IFS= read -r domain; do
     # Check if the domain is empty
     if [[ -z "$domain" ]]; then
@@ -48,7 +52,7 @@ inject_host_header() {
     # Increment the counter
     counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
-    curl -H "Host: $UD.Host.$Collab"  "$domain" &> /dev/null &
+    curl -H "Host: $UD.h.$Collab"  "$domain" &> /dev/null &
     # Print the processed domain for reference
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_host_header.log
     # Wait for $Delay seconds before next iteration
@@ -62,7 +66,11 @@ inject_common_headers() {
   echo -e "${light_blue}[*] Injecting Burp Collaborator into common headers...${NC}"
   # For Counter
   counter=0
-  total_urls=$(wc -l < "$list")  
+  total_urls=$(wc -l < "$list")
+  
+  calculate_estimated_time $total_urls $requests_per_second
+  sleep 1
+
   while IFS= read -r domain; do
     # Check if the domain is empty
     if [[ -z "$domain" ]]; then
@@ -87,7 +95,11 @@ inject_absolute_url() {
   echo -e "${light_blue}[*] Injecting Burp Collaborator into absolute URL...${NC}"
   # For Counter
   counter=0
-  total_urls=$(wc -l < "$list")  
+  total_urls=$(wc -l < "$list")
+  
+  calculate_estimated_time $total_urls $requests_per_second
+  sleep 1
+
   while IFS= read -r domain; do
     # Check if the domain is empty
     if [[ -z "$domain" ]]; then
@@ -105,6 +117,23 @@ inject_absolute_url() {
     sleep $delay
   done < "$list"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into absolute URL ${YELLOW}Finished ${NC}"
+}
+
+#function to calculate_estimated_time_and_finish_time
+function calculate_estimated_time() {
+    total_requests=$1
+    r_per_second=$2
+
+    total_time=$((total_requests / r_per_second))
+
+    hours=$((total_time / 3600))
+    minutes=$(( (total_time % 3600) / 60))
+    seconds=$(( (total_time % 60) ))
+
+    current_time=$(date +%s)
+    finish_time=$(date -d "@$((current_time + total_time))" +"%H:%M")
+
+    echo -e "\033[33m[*] Estimated finish time: ${finish_time} (${hours}h, ${minutes}m, ${seconds}s.)\033[0m"
 }
 
 # Function to handle the "-e" option
@@ -168,7 +197,8 @@ while getopts "hepas:c:l:" opt; do
     e) stages+=("headers") ;;
     p) stages+=("parameters") ;;
     a) stages+=("absolute") ;;
-    s) delay=$(echo "scale=2; 1/$OPTARG" | bc) ;;
+    s) requests_per_second="$OPTARG"
+       delay=$(echo "scale=2; 1/$OPTARG" | bc) ;;
     c) Collab="$OPTARG" ;;
     l) list="$OPTARG" ;;
     \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
