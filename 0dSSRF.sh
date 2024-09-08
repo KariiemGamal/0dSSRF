@@ -38,9 +38,6 @@ inject_host_header() {
   # For Counter
   counter=0
   total_urls=$(wc -l < "$list")
-  
-  calculate_estimated_time $total_urls $requests_per_second
-  sleep 1
 
   while IFS= read -r domain; do
     # Check if the domain is empty
@@ -67,9 +64,6 @@ inject_common_headers() {
   # For Counter
   counter=0
   total_urls=$(wc -l < "$list")
-  
-  calculate_estimated_time $total_urls $requests_per_second
-  sleep 1
 
   while IFS= read -r domain; do
     # Check if the domain is empty
@@ -96,9 +90,6 @@ inject_absolute_url() {
   # For Counter
   counter=0
   total_urls=$(wc -l < "$list")
-  
-  calculate_estimated_time $total_urls $requests_per_second
-  sleep 1
 
   while IFS= read -r domain; do
     # Check if the domain is empty
@@ -118,23 +109,6 @@ inject_absolute_url() {
     sleep $delay
   done < "$list"
   echo -e "${GREEN}✅ Injecting Burp Collaborator into absolute URL ${YELLOW}Finished ${NC}"
-}
-
-#function to calculate_estimated_time_and_finish_time
-function calculate_estimated_time() {
-    total_requests=$1
-    r_per_second=$2
-
-    total_time=$((total_requests / r_per_second))
-
-    hours=$((total_time / 3600))
-    minutes=$(( (total_time % 3600) / 60))
-    seconds=$(( (total_time % 60) ))
-
-    current_time=$(date +%s)
-    finish_time=$(date -d "@$((current_time + total_time))" +"%H:%M")
-
-    echo -e "\033[33m[*] Estimated finish time: ${finish_time} (${hours}h, ${minutes}m, ${seconds}s.)\033[0m"
 }
 
 # Function to handle the "-e" option
@@ -198,8 +172,7 @@ while getopts "hepas:c:l:" opt; do
     e) stages+=("headers") ;;
     p) stages+=("parameters") ;;
     a) stages+=("absolute") ;;
-    s) requests_per_second="$OPTARG"
-       delay=$(echo "scale=2; 1/$OPTARG" | bc) ;;
+    s) delay=$(echo "scale=2; 1/$OPTARG" | bc) ;;
     c) Collab="$OPTARG" ;;
     l) list="$OPTARG" ;;
     \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
