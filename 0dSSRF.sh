@@ -142,7 +142,7 @@ inject_url_parameters() {
   fi
   # Extract parameters and inject separately
   IFS='&' read -r -a params <<< "$(echo "$url" | grep -oP '(?<=\?).*')"
-  UD=$(echo "$domain" | awk -F'[://" ]+' '{print $2}'| tr . -)
+  UD=$(echo "$url" | awk -F'[://" ]+' '{print $2}'| tr . -)
   # Base URL without parameters
   base_url=$(echo "$url" | grep -oP '^[^?]+')
   p=0
