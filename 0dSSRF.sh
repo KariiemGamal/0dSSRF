@@ -7,9 +7,9 @@ BLUE='\033[0;34m'
 light_blue='\033[0;94m'
 NC='\033[0m' # No Color
 
-#info
-#Hi, It's Kariem Gamal, aka 0d.MErCiFul, from team 0dYSs3y.?
-#this tool is to test SSRF and Open Redirect vulnerabilities
+# Info
+# This tool is to test SSRF and Open Redirect vulnerabilities
+# Created by Kariem Gamal (0d.MErCiFul) from 0dYSs3y.? team
 
 # Function to print the intro message
 print_intro() {
