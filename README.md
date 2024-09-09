@@ -50,7 +50,7 @@ Example:
 ```bash
 ./0dSSRF.sh -hepa -l targets.txt -c my-burp-collab-id.oastify.com -s 20
 ```
-This command will scan targets listed in "targets.txt" for URL parameter vulnerabilities, using your Burp Collaborator server with a delay of 0.2 seconds between requests.
+This command will scan targets listed in "targets.txt" for URL parameter vulnerabilities, using your Burp Collaborator server with 20 request per second.
 
 **How it work?**
 
