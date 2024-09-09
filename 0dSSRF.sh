@@ -181,7 +181,7 @@ done
 
 # Ensure required options are provided
 if [ -z "$Collab" ] || [ -z "$delay" ] || [ -z "$list" ]; then
-  echo "Usage: $0 -h|-e|-p -l urls_list.txt -c collaborator_id -s requests_per_second"
+  echo "Usage: $0 -h|-e|-p|-a -l urls_list.txt -c collaborator_id -s requests_per_second"
   exit 1
 fi
 
