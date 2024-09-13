@@ -32,7 +32,7 @@ print_intro() {
 print_intro
 
 # Store resulsts in dir
-log_time=$(date +"%H:%M:%S")
+log_time=$(date +"%d-%m-%y_%H:%M")
 mkdir log_$log_time
 
 # Function to inject Host header
