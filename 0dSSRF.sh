@@ -127,15 +127,16 @@ handle_e_option() {
 inject_url_parameters() {
   while IFS= read -r main_Domain; do
     echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
-    printf $main_Domain | gau --subs --o gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
-    waymore -i $main_Domain -mode U -oU waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
-    cat gau.output waymore.output | uro > all_urls.log
-    rm gau.output waymore.output
-    cat all_urls.log | grep -o '.*\?.*=.*' > all_params
-    cat all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > filtered_params.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
-    echo "">>filtered_params.txt
     mkdir ./log_$log_time/0dSSRF_$main_Domain
-    mv all_urls.log all_params filtered_params.txt ./log_$log_time/0dSSRF_$main_Domain/
+    
+    printf $main_Domain | gau --subs --o ./log_$log_time/0dSSRF_$main_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
+    waymore -i $main_Domain -mode U -oU ./log_$log_time/0dSSRF_$main_Domain/waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
+    cat ./log_$log_time/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output | uro > ./log_$log_time/all_urls.log
+    rm ./log_$log_time/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output
+    cat ./log_$log_time/all_urls.log | grep -o '.*\?.*=.*' > ./log_$log_time/all_params
+    cat ./log_$log_time/all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > ./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
+    echo "">> ./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt
+    
     echo -e "${light_blue}[*] injecting Burp Collaborator into parameters...${NC}"
     counter=0
     total_urls=$(wc -l < "./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt")
