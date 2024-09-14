@@ -35,10 +35,8 @@ print_intro
 
 # Continue Function
 continue_Function() {
-
   local file="$1"
   local log_file="$2"
-  
 
   # Check if the file exists
   if [[ ! -f "$log_file" ]]; then
@@ -59,7 +57,7 @@ continue_Function() {
 continue_Parms() {
   local C_Domain="$1"
   local log_file="$2"
-  
+
   # checks if scanning started already
   if grep -i "injecting Burp Collaborator into $C_Domain parameters..." "$log_file" > /dev/null; then
     echo -e "${GREEN}[*] Starting resuming scanning for $C_Domain ${NC}"
@@ -109,7 +107,6 @@ inject_host_header() {
     fi
   fi
 
-
   while IFS= read -r domain; do
     # Check if the domain is empty
     if [[ -z "$domain" ]]; then
@@ -144,7 +141,6 @@ inject_common_headers() {
     fi
   fi
 
-
   while IFS= read -r domain; do
     # Check if the domain is empty
     if [[ -z "$domain" ]]; then
@@ -178,7 +174,6 @@ inject_absolute_url() {
       local list="./$log_dir/continue_list"
     fi
   fi
-
 
   while IFS= read -r domain; do
     # Check if the domain is empty
@@ -230,7 +225,7 @@ inject_url_parameters() {
     fi
 
     echo -e "${light_blue}[*] injecting Burp Collaborator into $main_Domain parameters...${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
-    
+
     total_urls=$(wc -l < "./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt")
     # Loop through each URL in the file
     while IFS= read -r url; do
