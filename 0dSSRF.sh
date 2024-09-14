@@ -34,7 +34,7 @@ print_intro
 
 
 # Continue Function
-Contiue_Function() {
+continue_Function() {
 
   local file="$1"
   local log_file="$2"
@@ -51,10 +51,48 @@ Contiue_Function() {
 
   line_text=$(tail $log_file -n 1 | cut -d " " -f 7)
   # Read the file line by line and write only lines below the specified line
-  awk -v line="$line_text" '{ if (NR >= FNR && $0 == line) { found=1; next } if (found) print }' "$file" > "./$log_dir/continue_list"
+  awk -v line="$line_text" '{ if (NR >= FNR && $0 == line) { found=1; next } if (found) print }' $file > "./$log_dir/continue_list"
   echo -e "${GREEN}[*] Lines above the line containing ${YELLOW}'$line_text' ${GREEN}removed from file '$file', And will continue scanning ${YELLOW}$(wc -l < "./$log_dir/continue_list") ${GREEN}URLS.${NC}"
 }
 
+# Continue parameters injection Function
+continue_Parms() {
+  local C_Domain="$1"
+  local log_file="$2"
+  
+  # checks if scanning started already
+  if grep -i "injecting Burp Collaborator into $C_Domain parameters..." "$log_file" > /dev/null; then
+    echo -e "${GREEN}[*] Starting resuming scanning for $C_Domain ${NC}"
+    last_endpoint=$(tail $log_file -n 2 | head -n 1 | cut -d "?" -f 1 | cut -d "?" -f 1 | cut -d " " -f 7)
+    awk -v line="$last_endpoint" '{ if (NR >= FNR && $0 ~ line) { found=1; next } if (found) print }' ./log_$log_time/0dSSRF_$C_Domain/filtered_params.txt > "./$log_dir/continue_parms"
+    Parms="./$log_dir/continue_parms"
+    counter=$(grep -nre "$last_endpoint" ./log_$log_time/0dSSRF_$C_Domain/filtered_params.txt | cut -d: -f1)
+    return 1
+  fi
+
+  # checks if gau didn't start 
+  if ! grep -i "Extracted URLs from gau for $C_Domain" "$log_file" > /dev/null; then
+    echo -e "${GREEN}[*] Starting Extracting URLs from gau for $C_Domain ${NC}"
+    printf $C_Domain | gau --subs --o ./log_$log_time/0dSSRF_$C_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau for $C_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+  fi
+
+  # checks if waymore didn't start 
+  if ! grep -i "Extracted URLs from waymore for $C_Domain" "$log_file" > /dev/null; then
+    echo -e "${GREEN}[*] Starting Extracting URLs from waymore for $C_Domain ${NC}"
+    waymore -i $C_Domain -mode U -oU ./log_$log_time/0dSSRF_$C_Domain/waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore for $C_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+  fi
+
+  # checks if urls have not filtered 
+  if ! grep -i "Collecting Parms from $C_Domain ${YELLOW}finished${NC}" "$log_file" > /dev/null; then
+    echo -e "${GREEN}[*] Starting filtering output files for $C_Domain ${NC}"
+    cat ./log_$log_time/0dSSRF_$C_Domain/gau.output ./log_$log_time/0dSSRF_$C_Domain/waymore.output | uro > ./log_$log_time/0dSSRF_$C_Domain/all_urls.log
+    rm ./log_$log_time/0dSSRF_$C_Domain/gau.output ./log_$log_time/0dSSRF_$C_Domain/waymore.output
+    cat ./log_$log_time/0dSSRF_$C_Domain/all_urls.log | grep -o '.*\?.*=.*' > ./log_$log_time/0dSSRF_$C_Domain/all_params
+    cat ./log_$log_time/0dSSRF_$C_Domain/all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > ./log_$log_time/0dSSRF_$C_Domain/filtered_params.txt && echo -e "${GREEN}[*] Collecting Parms from $C_Domain ${YELLOW}finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+    echo "">> ./log_$log_time/0dSSRF_$C_Domain/filtered_params.txt
+    Parms="./log_$log_time/0dSSRF_$C_Domain/filtered_params.txt"
+  fi
+}
 
 # Function to inject Host header
 inject_host_header() {
@@ -64,7 +102,7 @@ inject_host_header() {
   total_urls=$(wc -l < "$list")
 
   if [[ "$Continue" == "true" ]]; then
-    Contiue_Function "$list" "./$log_dir/inject_host_header.log"
+    Continue_Function "$list" "./$log_dir/inject_host_header.log"
     if [[ "$Started" == "true" ]]; then
       counter=$(grep -nre "$line_text" $list | cut -d: -f1)
       local list="./$log_dir/continue_list"
@@ -99,7 +137,7 @@ inject_common_headers() {
   total_urls=$(wc -l < "$list")
 
   if [[ "$Continue" == "true" ]]; then
-    Contiue_Function "$list" "./$log_dir/inject_common_headers.log"
+    Continue_Function "$list" "./$log_dir/inject_common_headers.log"
     if [[ "$Started" == "true" ]]; then
       counter=$(grep -nre "$line_text" $list | cut -d: -f1)
       local list="./$log_dir/continue_list"
@@ -134,7 +172,7 @@ inject_absolute_url() {
   total_urls=$(wc -l < "$list")
 
   if [[ "$Continue" == "true" ]]; then
-    Contiue_Function "$list" "./$log_dir/inject_absolute_url.log"
+    Continue_Function "$list" "./$log_dir/inject_absolute_url.log"
     if [[ "$Started" == "true" ]]; then
       counter=$(grep -nre "$line_text" $list | cut -d: -f1)
       local list="./$log_dir/continue_list"
@@ -175,18 +213,24 @@ handle_e_option() {
 inject_url_parameters() {
   while IFS= read -r main_Domain; do
     echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
-    mkdir ./log_$log_time/0dSSRF_$main_Domain
-    
-    printf $main_Domain | gau --subs --o ./log_$log_time/0dSSRF_$main_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau${NC}"
-    waymore -i $main_Domain -mode U -oU ./log_$log_time/0dSSRF_$main_Domain/waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore${NC}"
-    cat ./log_$log_time/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output | uro > ./log_$log_time/all_urls.log
-    rm ./log_$log_time/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output
-    cat ./log_$log_time/all_urls.log | grep -o '.*\?.*=.*' > ./log_$log_time/all_params
-    cat ./log_$log_time/all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > ./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt && echo -e "${GREEN}[*]Collecting Parms ${YELLOW}finished${NC}"
-    echo "">> ./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt
-    
-    echo -e "${light_blue}[*] injecting Burp Collaborator into parameters...${NC}"
     counter=0
+
+    if [ "$Continue" == "true" ] && [ -d "./$log_dir/0dSSRF_$main_Domain" ]; then
+      continue_Parms "$main_Domain" "./log_$log_time/inject_url_parameters.log"
+    else
+      mkdir ./log_$log_time/0dSSRF_$main_Domain
+      printf $main_Domain | gau --subs --o ./log_$log_time/0dSSRF_$main_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau for $main_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      waymore -i $main_Domain -mode U -oU ./log_$log_time/0dSSRF_$main_Domain/waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore for $main_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      cat ./log_$log_time/0dSSRF_$main_Domain/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output | uro > ./log_$log_time/0dSSRF_$main_Domain/all_urls.log
+      rm ./log_$log_time/0dSSRF_$main_Domain/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output
+      cat ./log_$log_time/0dSSRF_$main_Domain/all_urls.log | grep -o '.*\?.*=.*' > ./log_$log_time/0dSSRF_$main_Domain/all_params
+      cat ./log_$log_time/0dSSRF_$main_Domain/all_params | uro -b jpg png js pdf css jpeg gif svg ttf woff > ./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt && echo -e "${GREEN}[*] Collecting Parms from $main_Domain ${YELLOW}finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      echo "">> ./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt
+      local Parms="./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt"
+    fi
+
+    echo -e "${light_blue}[*] injecting Burp Collaborator into $main_Domain parameters...${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+    
     total_urls=$(wc -l < "./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt")
     # Loop through each URL in the file
     while IFS= read -r url; do
@@ -215,7 +259,7 @@ inject_url_parameters() {
       echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a ./log_$log_time/inject_url_parameters.log
       sleep $delay
     done
-    done < "./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt"
+    done < "$Parms"
     echo -e "${GREEN}✅ Injecting Burp Collaborator into parameters on $main_Domain ${YELLOW}Finished ${NC}"
   done < "./log_$log_time/main_Domains.txt"
 }
