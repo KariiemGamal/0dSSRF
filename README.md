@@ -15,6 +15,9 @@ https://medium.com/p/944be6770a02/edit
     * URL Parameter Injection (with automatic URL extraction)
     * Absolute URL
 * Customizable delay between requests to control scan speed.
+* Resumable progress.
+* Save the output and log files  in an organized manner.
+
 
 **Requirements:**
 
@@ -45,7 +48,7 @@ OPtions:
 * -l: Path to a file containing a list of target URLs
 * -c: Burp Collaborator server ID (replace with your collaborator ID)
 * -s: Delay between requests in seconds (e.g., -s 0.1 for 10 requests per second)
-* -r: Resume scanning from logs file -r log_directory (e.g., -r log_14-09-24_00:18:38)
+* -r: Resume scanning from logs file -r log_directory (e.g., ./0dSSRF.sh -hepa -l urls_list.txt -c collaborator_id -s requests_per_second -r log_14-09-24_00:18:38)
 
 Example:
 ```bash
