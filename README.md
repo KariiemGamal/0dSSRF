@@ -45,6 +45,7 @@ OPtions:
 * -l: Path to a file containing a list of target URLs
 * -c: Burp Collaborator server ID (replace with your collaborator ID)
 * -s: Delay between requests in seconds (e.g., -s 0.1 for 10 requests per second)
+* -r: Resume scanning from logs file -r log_directory (e.g., -r log_14-09-24_00:18:38)
 
 Example:
 ```bash
@@ -83,15 +84,27 @@ This stage also includes testing for open redirects. It's crucial to verify that
 
 For uncompleted or malformed domain name in DNS lookup in your collaborator, it's recommended to look at log files and capture the vulnerable server by coupling time between the activity in collaborator and in log file using command:
 
-"$cat  inject_host_header.log | grep 03:27 " for example
+"$cat  ./log_dir/inject_host_header.log | grep 03:27 " for example
 
 ![362429258-5f7de255-930c-4c3d-b435-2135bc3b665e](https://github.com/user-attachments/assets/1a24cd18-ac57-44c6-99dd-f30d3de1294f)
 ![362429216-0eb10439-7124-464e-9eb3-9e377adfada7](https://github.com/user-attachments/assets/e3ce4230-924d-4dfb-9f34-f54da095ca01)
 
 
+**Output Files:**
+
+1- First, Script will make a directory with name "log_$log_time" to store you scanning files in it
+2- [inject_host_header.log, inject_common_headers.log, inject_absolute_url.log, inject_url_parameters.log] these files stores the logs of sent requests with date
+3- For Parameters scaning, script would make a directory for each main domain to store granted urls separately
+   main_Domains.txt: contains all main domains from your list `input for gau and waymore`
+   all_urls.log: contains all filtered urls granted from gau and waymore
+   all_params: contains all urls that include parameters
+   filtered_params.txt: all parameters but filtered out [jpg png js pdf css jpeg gif svg ttf woff] `scanned file`
+
 **Future ideas:**
+
 - Webhook Integration: Working on automating the collection of vulnerable servers from Collaborator using webhook.site.
 - Discord Notification: After running the script, receive a Discord message with identified vulnerable domains directly.
+- Using multi threads instead of while loops to enhance script's speed and reduce load to system
 
 
 Disclaimer:
