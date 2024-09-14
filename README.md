@@ -92,12 +92,16 @@ For uncompleted or malformed domain name in DNS lookup in your collaborator, it'
 
 **Output Files:**
 
-1- First, Script will make a directory with name "log_$log_time" to store you scanning files in it
-2- [inject_host_header.log, inject_common_headers.log, inject_absolute_url.log, inject_url_parameters.log] these files stores the logs of sent requests with date
-3- For Parameters scaning, script would make a directory for each main domain to store granted urls separately
+- First, Script will make a directory named "log_$log_time" to store you scanning files in it ex: log_14-09-24_00:00:52
+- [inject_host_header.log, inject_common_headers.log, inject_absolute_url.log, inject_url_parameters.log] these files stores the logs of sent requests with date
+- For Parameters scaning, script would make a directory for each main domain to store granted urls separately
+  
    main_Domains.txt: contains all main domains from your list `input for gau and waymore`
+  
    all_urls.log: contains all filtered urls granted from gau and waymore
+  
    all_params: contains all urls that include parameters
+  
    filtered_params.txt: all parameters but filtered out [jpg png js pdf css jpeg gif svg ttf woff] `scanned file`
 
 **Future ideas:**
