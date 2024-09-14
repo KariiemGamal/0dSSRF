@@ -38,7 +38,7 @@ Contiue_Function() {
 
   local file="$1"
   local log_file="$2"
-  line_text=$(tail $log_file -n 1 | cut -d " " -f 7)
+  
 
   # Check if the file exists
   if [[ ! -f "$log_file" ]]; then
@@ -49,6 +49,7 @@ Contiue_Function() {
     Started="true"
   fi
 
+  line_text=$(tail $log_file -n 1 | cut -d " " -f 7)
   # Read the file line by line and write only lines below the specified line
   awk -v line="$line_text" '{ if (NR >= FNR && $0 == line) { found=1; next } if (found) print }' "$file" > "./$log_dir/continue_list"
   echo -e "${GREEN}[*] Lines above the line containing ${YELLOW}'$line_text' ${GREEN}removed from file '$file', And will continue scanning ${YELLOW}$(wc -l < "./$log_dir/continue_list") ${GREEN}URLS.${NC}"
@@ -241,12 +242,19 @@ if [ -z "$Collab" ] || [ -z "$delay" ] || [ -z "$list" ]; then
   exit 1
 fi
 
+
+
 # create a new dir to store logs or continue on previous log file
 if [[ "$Continue" != "true" ]]; then
   # Store results in log dire
   log_time=$(date +"%d-%m-%y_%H:%M:%S")
   mkdir log_$log_time
 else
+  # handle error
+  if [[ ! -d "$log_dir" ]]; then
+    echo -e "${RED}[*] ${YELLOW}$log_dir ${RED}not found, please make sure you log directory is correct.${NC}"
+    exit 1
+  fi
   log_time=$(echo "$log_dir" | sed 's/^log_//')
 fi
 
