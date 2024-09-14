@@ -5,6 +5,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 light_blue='\033[0;94m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Info
@@ -31,9 +32,28 @@ print_intro() {
 # intro function
 print_intro
 
-# Store resulsts in dir
-log_time=$(date +"%d-%m-%y_%H:%M")
-mkdir log_$log_time
+
+# Continue Function
+Contiue_Function() {
+
+  local file="$1"
+  local log_file="$2"
+  line_text=$(tail $log_file -n 1 | cut -d " " -f 7)
+
+  # Check if the file exists
+  if [[ ! -f "$log_file" ]]; then
+    echo -e "${RED}[*] Error: Log file not detected. Scanning process will start from the beginning. ${NC}"
+    Started="false"
+    return 1
+  else
+    Started="true"
+  fi
+
+  # Read the file line by line and write only lines below the specified line
+  awk -v line="$line_text" '{ if (NR >= FNR && $0 == line) { found=1; next } if (found) print }' "$file" > "./$log_dir/continue_list"
+  echo -e "${GREEN}[*] Lines above the line containing ${YELLOW}'$line_text' ${GREEN}removed from file '$file', And will continue scanning ${YELLOW}$(wc -l < "./$log_dir/continue_list") ${GREEN}URLS.${NC}"
+}
+
 
 # Function to inject Host header
 inject_host_header() {
@@ -41,6 +61,15 @@ inject_host_header() {
   # For Counter
   counter=0
   total_urls=$(wc -l < "$list")
+
+  if [[ "$Continue" == "true" ]]; then
+    Contiue_Function "$list" "./$log_dir/inject_host_header.log"
+    if [[ "$Started" == "true" ]]; then
+      counter=$(grep -nre "$line_text" $list | cut -d: -f1)
+      local list="./$log_dir/continue_list"
+    fi
+  fi
+
 
   while IFS= read -r domain; do
     # Check if the domain is empty
@@ -68,6 +97,15 @@ inject_common_headers() {
   counter=0
   total_urls=$(wc -l < "$list")
 
+  if [[ "$Continue" == "true" ]]; then
+    Contiue_Function "$list" "./$log_dir/inject_common_headers.log"
+    if [[ "$Started" == "true" ]]; then
+      counter=$(grep -nre "$line_text" $list | cut -d: -f1)
+      local list="./$log_dir/continue_list"
+    fi
+  fi
+
+
   while IFS= read -r domain; do
     # Check if the domain is empty
     if [[ -z "$domain" ]]; then
@@ -93,6 +131,15 @@ inject_absolute_url() {
   # For Counter
   counter=0
   total_urls=$(wc -l < "$list")
+
+  if [[ "$Continue" == "true" ]]; then
+    Contiue_Function "$list" "./$log_dir/inject_absolute_url.log"
+    if [[ "$Started" == "true" ]]; then
+      counter=$(grep -nre "$line_text" $list | cut -d: -f1)
+      local list="./$log_dir/continue_list"
+    fi
+  fi
+
 
   while IFS= read -r domain; do
     # Check if the domain is empty
@@ -173,7 +220,7 @@ inject_url_parameters() {
 }
 
 # Parse command-line options
-while getopts "hepas:c:l:" opt; do
+while getopts "hepas:c:l:r:" opt; do
   case $opt in
     h) stages+=("host") ;;
     e) stages+=("headers") ;;
@@ -182,6 +229,8 @@ while getopts "hepas:c:l:" opt; do
     s) delay=$(echo "scale=2; 1/$OPTARG" | bc) ;;
     c) Collab="$OPTARG" ;;
     l) list="$OPTARG" ;;
+    r) log_dir="$OPTARG"
+       Continue="true" ;;
     \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
   esac
 done
@@ -190,6 +239,15 @@ done
 if [ -z "$Collab" ] || [ -z "$delay" ] || [ -z "$list" ]; then
   echo "Usage: $0 -h|-e|-p|-a -l urls_list.txt -c collaborator_id -s requests_per_second"
   exit 1
+fi
+
+# create a new dir to store logs or continue on previous log file
+if [[ "$Continue" != "true" ]]; then
+  # Store results in log dire
+  log_time=$(date +"%d-%m-%y_%H:%M:%S")
+  mkdir log_$log_time
+else
+  log_time=$(echo "$log_dir" | sed 's/^log_//')
 fi
 
 # Run the selected stages
