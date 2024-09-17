@@ -90,9 +90,9 @@ continue_Parms() {
       cat $list | grep $C_Domain | sort -u > ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt
       # chech for live Targets and start crawling
       echo -e "${light_blue}[*] Check for live targets from $C_Domain${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
-      cat ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt | httpx -o ./log_$log_time/0dSSRF_$C_Domain/httpx.output -silent
+      cat ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt | httpx -o ./log_$log_time/0dSSRF_$C_Domain/httpx.output -silent 1>/dev/null
       echo -e "${light_blue}[*] Crawling Now on $(wc -l < ./log_$log_time/0dSSRF_$C_Domain/httpx.output) targets from $C_Domain, It may take time...${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
-      cat ./log_$log_time/0dSSRF_$C_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -jc
+      cat ./log_$log_time/0dSSRF_$C_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -jc 1>/dev/null
       echo -e "${GREEN}[*] Crawling on $C_Domain Finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
       rm ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt
     fi
@@ -253,9 +253,9 @@ inject_url_parameters() {
         cat $list | grep $main_Domain | sort -u > ./log_$log_time/0dSSRF_$main_Domain/Crawling_Targets.txt
         # chech for live Targets and start crawling
         echo -e "${light_blue}[*] Check for live targets from $main_Domain${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
-        cat ./log_$log_time/0dSSRF_$main_Domain/Crawling_Targets.txt | httpx -o ./log_$log_time/0dSSRF_$main_Domain/httpx.output -silent
+        cat ./log_$log_time/0dSSRF_$main_Domain/Crawling_Targets.txt | httpx -o ./log_$log_time/0dSSRF_$main_Domain/httpx.output -silent 1>/dev/null
         echo -e "${light_blue}[*] Crawling Now on $(wc -l < ./log_$log_time/0dSSRF_$main_Domain/httpx.output) targets from $main_Domain, It may take time...${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
-        cat ./log_$log_time/0dSSRF_$main_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$main_Domain/katana.output -silent -jc
+        cat ./log_$log_time/0dSSRF_$main_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$main_Domain/katana.output -silent -jc 1>/dev/null
         echo -e "${GREEN}[*] Crawling on $main_Domain Finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
         rm ./log_$log_time/0dSSRF_$main_Domain/Crawling_Targets.txt
       fi
