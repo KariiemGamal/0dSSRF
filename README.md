@@ -135,6 +135,8 @@ All logs and results are stored in a unique directory named log_<timestamp>. Her
     - all_urls.log: Filtered URLs.
     - all_params: URLs with parameters.
     - filtered_params.txt: Filtered parameters excluding static file types (e.g., jpg, js, css).
+    - httpx.output: Contains all live subdomains of the target.
+    - katana.output: Contains the output of katana.
 
 ---
 
