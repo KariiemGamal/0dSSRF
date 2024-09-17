@@ -33,7 +33,7 @@ print_intro() {
 print_intro
 
 
-# Continue Function
+# Function to resume scanning from the last logged line for the first three stages [h,e,a]
 continue_Function() {
   local file="$1"
   local log_file="$2"
@@ -47,18 +47,19 @@ continue_Function() {
     Started="true"
   fi
 
+  # Retrieve the last scanned line and update progress
   line_text=$(tail $log_file -n 1 | cut -d " " -f 7)
   # Read the file line by line and write only lines below the specified line
   awk -v line="$line_text" '{ if (NR >= FNR && $0 == line) { found=1; next } if (found) print }' $file > "./$log_dir/continue_list"
   echo -e "${GREEN}[*] Lines above the line containing ${YELLOW}'$line_text' ${GREEN}removed from file '$file', And will continue scanning ${YELLOW}$(wc -l < "./$log_dir/continue_list") ${GREEN}URLS.${NC}"
 }
 
-# Continue parameters injection Function
+# Function to resume parameter injection scanning
 continue_Parms() {
   local C_Domain="$1"
   local log_file="$2"
 
-  # checks if scanning started already
+  # Check if parameter injection has already started
   if grep -i "injecting Burp Collaborator into $C_Domain parameters..." "$log_file" > /dev/null; then
     echo -e "${GREEN}[*] Starting resuming scanning for $C_Domain ${NC}"
     last_endpoint=$(tail $log_file -n 2 | head -n 1 | cut -d "?" -f 1 | cut -d "?" -f 1 | cut -d " " -f 7)
@@ -80,6 +81,29 @@ continue_Parms() {
     echo -e "${GREEN}[*] Starting Extracting URLs from waymore for $C_Domain ${NC}"
     printf $C_Domain | waymore -mode U -oU ./log_$log_time/0dSSRF_$C_Domain/waymore.output -nd > /dev/null
     echo -e "${GREEN}[*] Extracted URLs from waymore for $C_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+  fi
+
+  # checks if katana didn't start 
+  if [ "$Crawling_Mode" == "true" ] && [ ! $(grep -i "Crawling on $C_Domain Finished" "$log_file" 2> /dev/null) ]; then
+    # resume from httpx step
+    if ! grep -i "targets from $C_Domain" "$log_file" > /dev/null; then
+      cat $list | grep $C_Domain | sort -u > ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt
+      # chech for live Targets and start crawling
+      echo -e "${light_blue}[*] Check for live targets from $C_Domain${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      cat ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt | httpx -o ./log_$log_time/0dSSRF_$C_Domain/httpx.output -silent
+      echo -e "${light_blue}[*] Crawling Now on $(wc -l < ./log_$log_time/0dSSRF_$C_Domain/httpx.output) targets from $C_Domain, It may take time...${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      cat ./log_$log_time/0dSSRF_$C_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -jc
+      echo -e "${GREEN}[*] Crawling on $C_Domain Finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      rm ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt
+    fi
+    # resume from katana step
+    if ! grep -i "Crawling on $C_Domain Finished" "$log_file" > /dev/null; then
+      # rsume katana with -resume option. (not good)
+      #katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -resume $(ls ~/.config/katana/ -t | head -n 1)
+      cat ./log_$log_time/0dSSRF_$C_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -jc
+      echo -e "${GREEN}[*] Crawling on $C_Domain Finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      rm ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt
+    fi
   fi
 
   # checks if urls have not filtered 
@@ -223,6 +247,18 @@ inject_url_parameters() {
       # Extracting URLs with waymore
       printf $main_Domain | waymore -mode U -oU ./log_$log_time/0dSSRF_$main_Domain/waymore.output -nd > /dev/null
       echo -e "${GREEN}[*] Extracted URLs from waymore for $main_Domain ${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+      # Extracting URLs with katana
+      if [[ "$Crawling_Mode" == "true" ]]; then
+        # Get Targets from original list
+        cat $list | grep $main_Domain | sort -u > ./log_$log_time/0dSSRF_$main_Domain/Crawling_Targets.txt
+        # chech for live Targets and start crawling
+        echo -e "${light_blue}[*] Check for live targets from $main_Domain${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+        cat ./log_$log_time/0dSSRF_$main_Domain/Crawling_Targets.txt | httpx -o ./log_$log_time/0dSSRF_$main_Domain/httpx.output -silent
+        echo -e "${light_blue}[*] Crawling Now on $(wc -l < ./log_$log_time/0dSSRF_$main_Domain/httpx.output) targets from $main_Domain, It may take time...${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+        cat ./log_$log_time/0dSSRF_$main_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$main_Domain/katana.output -silent -jc
+        echo -e "${GREEN}[*] Crawling on $main_Domain Finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
+        rm ./log_$log_time/0dSSRF_$main_Domain/Crawling_Targets.txt
+      fi
       # Filtering tools output
       cat ./log_$log_time/0dSSRF_$main_Domain/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output | uro > ./log_$log_time/0dSSRF_$main_Domain/all_urls.log
       rm ./log_$log_time/0dSSRF_$main_Domain/gau.output ./log_$log_time/0dSSRF_$main_Domain/waymore.output
@@ -271,8 +307,9 @@ while getopts "hepas:c:l:r:" opt; do
   case $opt in
     h) stages+=("host") ;;
     e) stages+=("headers") ;;
-    p) stages+=("parameters") ;;
     a) stages+=("absolute") ;;
+    p) stages+=("parameters") ;;
+    k) Crawling_Mode="true" ;;
     s) delay=$(echo "scale=2; 1/$OPTARG" | bc) ;;
     c) Collab="$OPTARG" ;;
     l) list="$OPTARG" ;;
@@ -287,8 +324,6 @@ if [ -z "$Collab" ] || [ -z "$delay" ] || [ -z "$list" ]; then
   echo "Usage: $0 -h|-e|-p|-a -l urls_list.txt -c collaborator_id -s requests_per_second"
   exit 1
 fi
-
-
 
 # create a new dir to store logs or continue on previous log file
 if [[ "$Continue" != "true" ]]; then
