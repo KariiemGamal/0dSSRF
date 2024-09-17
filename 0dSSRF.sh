@@ -303,7 +303,7 @@ inject_url_parameters() {
 }
 
 # Parse command-line options
-while getopts "hepas:c:l:r:" opt; do
+while getopts "hepaks:c:l:r:" opt; do
   case $opt in
     h) stages+=("host") ;;
     e) stages+=("headers") ;;
