@@ -100,7 +100,7 @@ continue_Parms() {
     if ! grep -i "Crawling on $C_Domain Finished" "$log_file" > /dev/null; then
       # rsume katana with -resume option. (not good)
       #katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -resume $(ls ~/.config/katana/ -t | head -n 1)
-      cat ./log_$log_time/0dSSRF_$C_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -jc
+      cat ./log_$log_time/0dSSRF_$C_Domain/httpx.output | katana -o ./log_$log_time/0dSSRF_$C_Domain/katana.output -silent -jc 1>/dev/null
       echo -e "${GREEN}[*] Crawling on $C_Domain Finished${NC}" | tee -a ./log_$log_time/inject_url_parameters.log
       rm ./log_$log_time/0dSSRF_$C_Domain/Crawling_Targets.txt
     fi
