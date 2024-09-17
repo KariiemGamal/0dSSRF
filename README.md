@@ -28,7 +28,9 @@
     - `gau`
     - `waymore`
     - `uro`
-
+  - Optional tools for crawling:
+    - `httpx`
+    - `katana`
 ---
 
 
@@ -52,7 +54,7 @@
 
 Run the tool with the following syntax:
 ```bash
-./0dSSRF.sh -h|-e|-p|-a -l <urls_list.txt> -c <collaborator_id> -s <requests_per_second> [-r <log_directory>]
+./0dSSRF.sh -h|-e|-p|-a|-k -l <urls_list.txt> -c <collaborator_id> -s <requests_per_second> [-r <log_directory>]
 ```
 
 ## OPtions:
@@ -61,6 +63,7 @@ Run the tool with the following syntax:
 * -e: Perform common header injection. (From, User-Agent, Referer, etc.)
 * -a: Perform absolute URL injection.
 * -p: Perform parameter injection.
+* -k: Get more URLs by crawling with katana
 * -l: Specify the list of URLs to test.
 * -c: Specify your Burp Collaborator ID for callbacks.
 * -s: Set the rate of requests. (e.g., -s 10 for 10 requests per second)
@@ -68,7 +71,7 @@ Run the tool with the following syntax:
 
 Example:
 ```bash
-./0dSSRF.sh -hepa -l targets.txt -c my-collab-id.oastify.com -s 20
+./0dSSRF.sh -hepak -l targets.txt -c my-collab-id.oastify.com -s 20
 ```
 This command will scan for vulnerabilities across Host header, common headers, parameters, and absolute URL on the URLs listed in targets.txt using your Burp Collaborator server, with 20 requests per second.
 
