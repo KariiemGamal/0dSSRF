@@ -149,10 +149,21 @@ Disclaimer:
 0dSSRF is designed for ethical hacking and security testing only. Unauthorized use on systems without permission is illegal and punishable by law. Always ensure you have explicit permission from the system owner before conducting any tests.
 
 ---
-
 Additional Notes:
    
     The script utilizes various tools for URL extraction (gau, waymore). You may need to install these tools separately.
     Make sure to add your API keys to config files of these tools to get all possible URLs
     The script automatically removes common file extensions during parameter extraction to focus on potential vulnerabilities.
     Remember to replace "my-burp-collab-id" with your actual Burp Collaborator server ID.
+
+--------
+
+<div align="center">
+
+0dSSRF is made with ❤️ by the **0dYSs3y.?** team, Join our Discord Server.
+
+<a href="https://discord.gg/nHmzPVE78X"><img src="https://github.com/user-attachments/assets/b6bc53ad-1c2e-4134-af49-29f12da47fef" width="300" alt="Join Discord"></a>
+
+</div>
+
+
