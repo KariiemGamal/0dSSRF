@@ -2,7 +2,7 @@
 
 0dSSRF is a powerful tool designed to automate the detection of **Server-Side Request Forgery (SSRF)** and **Open Redirect** vulnerabilities in web applications. Created by **Kariem Gamal (0d.MErCiFul)** from the **0dYSs3y.?** team, it simplifies key attack techniques, saving time and effort for security professionals.
 
-### 🚀 [Read a detailed explanation on Medium](https://medium.com/p/944be6770a02/edit)
+### 🚀 [Read a detailed explanation on Medium](https://medium.com/@kariiem/0dssrf-automate-finding-ssrf-external-service-interactions-open-redirects-944be6770a02)
 
 
 ## Key Features:
