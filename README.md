@@ -40,7 +40,7 @@
 
 1. Download the script:
    ```bash
-   git clone https://github.com/your-username/0dSSRF.git
+   git clone https://github.com/KariiemGamal/0dSSRF.git
    cd 0dSSRF
    chmod +x 0dSSRF.sh
    ```
